@@ -21,11 +21,14 @@ A high-performance, professional-grade API call virtualization framework designe
 
 ## Changelog
 
-### v1.0.1 (04/09/2025)
-
-- Improved kernel-mode protection
-- Fixed memory leaks in Nexus.c
-- Added support for Clang compiler
+```
+v1.0.1 (2024-09-04)
+-------------------
++ Added support for Clang compiler
++ Enhanced kernel-mode protection
+* Fixed memory leaks in Nexus.c
+* Improved documentation
+```
 
 ## Getting Started
 
