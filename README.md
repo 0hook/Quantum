@@ -2,13 +2,15 @@
 
 A high-performance, professional-grade API call virtualization framework designed to protect applications from hooking and IAT manipulation.
 
-## Changelog - v1.0.1 (2024-09-04)
+## Changelog
 
 ```
-+ Added support for Clang compiler
-+ Enhanced kernel-mode protection
-* Fixed memory leaks in Nexus.c
-* Improved documentation
+v1.0.1 (2025-04-09)
+-------------------
+[+] Added support for Clang compiler
+[+] Enhanced kernel-mode protection
+[*] Fixed memory leaks in Nexus.c
+[*] Improved documentation
 ```
 
 ## Features
