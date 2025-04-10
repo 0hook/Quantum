@@ -19,6 +19,14 @@ A high-performance, professional-grade API call virtualization framework designe
 - Malware research and analysis
 - Critical application security
 
+## Changelog
+
+### v1.0.1 (04/09/2025)
+
+- Improved kernel-mode protection
+- Fixed memory leaks in Nexus.c
+- Added support for Clang compiler
+
 ## Getting Started
 
 ### Prerequisites
@@ -95,6 +103,10 @@ int main()
     {
         printf("\n[~] calling RtlExitUserThread(0xDEAD)\n");
         fn(0xDEAD);
+    }
+    else
+    {
+        printf("[!] failed to resolve RtlExitUserThread\n");
     }
 
     return 0;

@@ -1,10 +1,10 @@
-﻿#include "SK.h"
+﻿#include "Nexus.h"
 
 void *gProxyPages[SK_PROXY_PAGE_COUNT] = {0};
 SK_PROXY_SLOT gProxyTable[SK_TOTAL_SLOTS] = {0};
 volatile LONG gProxySlotCounter = 0;
 
-__forceinline DWORD __fastcall SKHash(const char *str)
+SK_FORCEINLINE DWORD SK_FASTCALL SKHash(const char *str)
 {
     DWORD hash = 0x811C9DC5;
     DWORD key = 0xA3B376C9;
@@ -26,7 +26,7 @@ __forceinline DWORD __fastcall SKHash(const char *str)
     return hash;
 }
 
-__forceinline BOOL SKIsLikelyHook(const BYTE *p)
+SK_FORCEINLINE BOOL SKIsLikelyHook(const BYTE *p)
 {
     if (p[0] == 0xE9)
         return TRUE; // JMP rel32
@@ -37,7 +37,7 @@ __forceinline BOOL SKIsLikelyHook(const BYTE *p)
     return FALSE;
 }
 
-__forceinline int SKFindFreeSlotFast()
+SK_FORCEINLINE int SKFindFreeSlotFast()
 {
     int start = InterlockedCompareExchange(&gProxySlotCounter, 0, 0);
 
@@ -51,7 +51,7 @@ __forceinline int SKFindFreeSlotFast()
     return InterlockedIncrement(&gProxySlotCounter) % SK_TOTAL_SLOTS;
 }
 
-__forceinline void SKSafeCopyProxy(void *dst, const void *src, size_t size)
+SK_FORCEINLINE void SKSafeCopyProxy(void *dst, const void *src, size_t size)
 {
     const BYTE *srcBytes = (const BYTE *)src;
     BYTE *dstBytes = (BYTE *)dst;
@@ -67,7 +67,7 @@ __forceinline void SKSafeCopyProxy(void *dst, const void *src, size_t size)
     }
 }
 
-__forceinline void *SKProxyResolveHashed(DWORD hash, const void *func)
+SK_FORCEINLINE void *SKProxyResolveHashed(DWORD hash, const void *func)
 {
     ULONGLONG now = __rdtsc();
 
@@ -91,11 +91,18 @@ __forceinline void *SKProxyResolveHashed(DWORD hash, const void *func)
             return NULL;
 
         if (InterlockedCompareExchangePointer(&gProxyPages[pageIndex], newPage, NULL) != NULL)
+        {
             VirtualFree(newPage, 0, MEM_RELEASE);
+        }
     }
 
     void *page = gProxyPages[pageIndex];
     void *slotAddr = (BYTE *)page + offset * SK_PROXY_SLOT_SIZE;
+
+    if (gProxyTable[index].TrampolineAddr)
+    {
+        SecureZeroMemory(gProxyTable[index].TrampolineAddr, SK_PROXY_SLOT_SIZE);
+    }
 
     SKSafeCopyProxy(slotAddr, func, SK_PROXY_SLOT_SIZE);
 
@@ -107,7 +114,7 @@ __forceinline void *SKProxyResolveHashed(DWORD hash, const void *func)
     return slotAddr;
 }
 
-__forceinline BOOL SKIsFuncOutOfTextSect(const void *func, const void *base)
+SK_FORCEINLINE BOOL SKIsFuncOutOfTextSect(const void *func, const void *base)
 {
     const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)((const BYTE *)base + ((const IMAGE_DOS_HEADER *)base)->e_lfanew);
     const IMAGE_SECTION_HEADER *sec = IMAGE_FIRST_SECTION(nt);
@@ -125,7 +132,7 @@ __forceinline BOOL SKIsFuncOutOfTextSect(const void *func, const void *base)
     return FALSE;
 }
 
-__forceinline void *SKStepoverIfHooked(DWORD hash, const void *func, const void *base, DWORD flags)
+SK_FORCEINLINE void *SKStepoverIfHooked(DWORD hash, const void *func, const void *base, DWORD flags)
 {
     const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)((const BYTE *)base + ((const IMAGE_DOS_HEADER *)base)->e_lfanew);
     const IMAGE_SECTION_HEADER *sec = IMAGE_FIRST_SECTION(nt);
@@ -276,4 +283,32 @@ void *SKGetProcedureAddrForCaller(const void *base, const char *funcName, DWORD 
     }
 
     return NULL;
+}
+
+BOOL SKVerifyProcessIntegrity(void)
+{
+    BOOL result = FALSE;
+    HANDLE hProcess = GetCurrentProcess();
+    DWORD cbNeeded = 0;
+
+    if (!OpenProcessToken(hProcess, TOKEN_QUERY, &hProcess))
+    {
+        return FALSE;
+    }
+
+    BYTE tokenInfoBuffer[64] = {0};
+    if (GetTokenInformation(hProcess, TokenIntegrityLevel, tokenInfoBuffer, sizeof(tokenInfoBuffer), &cbNeeded))
+    {
+        PTOKEN_MANDATORY_LABEL tokenInfo = (PTOKEN_MANDATORY_LABEL)tokenInfoBuffer;
+        DWORD integrityLevel = *GetSidSubAuthority(tokenInfo->Label.Sid,
+                                                   *GetSidSubAuthorityCount(tokenInfo->Label.Sid) - 1);
+
+        if (integrityLevel >= SECURITY_MANDATORY_MEDIUM_RID)
+        {
+            result = TRUE;
+        }
+    }
+
+    CloseHandle(hProcess);
+    return result;
 }

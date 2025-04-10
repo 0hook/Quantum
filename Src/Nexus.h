@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "defs.h"
+#include "Core.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -54,6 +54,8 @@ extern "C"
 
     void *SKGetModuleBase(const wchar_t *moduleName);
     void *SKGetProcedureAddrForCaller(const void *base, const char *funcName, DWORD flags);
+
+    BOOL SKVerifyProcessIntegrity(void);
 
     void SKProxyLRU(ULONGLONG olderThan);
     void SKStackScan(StackFrameHit *hits, int *count);

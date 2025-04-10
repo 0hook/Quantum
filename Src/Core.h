@@ -5,6 +5,22 @@
 
 #include <windows.h>
 
+#if defined(__clang__)
+#define SK_COMPILER_CLANG 1
+#elif defined(_MSC_VER)
+#define SK_COMPILER_MSVC 1
+#else
+#error "Unsupported compiler"
+#endif
+
+#if defined(SK_COMPILER_CLANG)
+#define SK_FORCEINLINE __attribute__((always_inline)) inline
+#define SK_FASTCALL __attribute__((fastcall))
+#elif defined(SK_COMPILER_MSVC)
+#define SK_FORCEINLINE __forceinline
+#define SK_FASTCALL __fastcall
+#endif
+
 #ifndef _UNICODE_STRING_DEFINED
 #define _UNICODE_STRING_DEFINED
 typedef struct _UNICODE_STRING

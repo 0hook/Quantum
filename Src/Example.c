@@ -1,4 +1,4 @@
-#include "SK.h"
+#include "Nexus.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -11,8 +11,6 @@ const char *Funcs[] = {
     "NtQueryInformationProcess",
     "LdrGetProcedureAddress",
     "RtlExitUserThread"};
-
-void *SKGetProcedureAddrForCaller(const void *base, const char *funcName, DWORD flags);
 
 int main()
 {
