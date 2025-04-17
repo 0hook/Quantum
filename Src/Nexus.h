@@ -16,10 +16,14 @@ extern "C"
 #define MAX_FRAMES 64
 #define TRAMPOLINE_SIZE 32
 #define SK_EXCEPTION_HOOK_DETECTED 0xE00000FF
+#define SK_EXCEPTION_TAMPER_DETECTED 0xE00000EE
 
 #define SK_FLAG_NONE 0x0
 #define SK_FLAG_ENABLE_SEH 0x1
 #define SK_FLAG_DISABLE_TRAMPOLINE 0x2
+#define SK_FLAG_DEEP_SCAN 0x4
+#define SK_FLAG_MEMORY_PROTECT 0x8
+#define SK_FLAG_VERIFY_SIGNATURE 0x10
 
 #define SK_PROXY_PAGE_COUNT 4
 #define SK_PROXY_PAGE_SIZE 4096
@@ -56,9 +60,16 @@ extern "C"
     void *SKGetProcedureAddrForCaller(const void *base, const char *funcName, DWORD flags);
 
     BOOL SKVerifyProcessIntegrity(void);
+    DWORD SKGetSystemIntegrityLevel(void);
 
     void SKProxyLRU(ULONGLONG olderThan);
     void SKStackScan(StackFrameHit *hits, int *count);
+
+    BOOL SKProtectMemoryRegion(void *address, SIZE_T size, DWORD protection);
+    BOOL SKVerifyMemorySignature(void *address, SIZE_T size, const BYTE *signature);
+    DWORD SKGenerateHardwareID(DWORD components);
+    BOOL SKDetectVirtualMachine(void);
+    BOOL SKSelfIntegrityCheck(void);
 
 #ifdef __cplusplus
 }

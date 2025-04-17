@@ -21,6 +21,16 @@
 #define SK_FASTCALL __fastcall
 #endif
 
+#define SK_INTEGRITY_NORMAL 0x1
+#define SK_INTEGRITY_HIGH 0x2
+#define SK_INTEGRITY_SYSTEM 0x4
+#define SK_INTEGRITY_ALL 0x7
+
+#define SK_HWID_VOLUME 0x1
+#define SK_HWID_CPU 0x2
+#define SK_HWID_BIOS 0x4
+#define SK_HWID_ALL 0x7
+
 #ifndef _UNICODE_STRING_DEFINED
 #define _UNICODE_STRING_DEFINED
 typedef struct _UNICODE_STRING

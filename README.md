@@ -5,6 +5,15 @@ A high-performance, professional-grade API call virtualization framework designe
 ## Changelog
 
 ```
+v1.1.0 (2025-05-15)
+-------------------
+[+] Added hardware ID generation
+[+] Added memory protection and signature verification
+[+] Added virtual machine detection
+[+] Added self-integrity check
+[+] Added process integrity level detection
+[+] Improved API call virtualization with deep scanning
+
 v1.0.1 (2025-04-09)
 -------------------
 [+] Added support for Clang compiler
@@ -14,12 +23,29 @@ v1.0.1 (2025-04-09)
 
 ## Features
 
-- Advanced anti-hooking mechanisms
-- IAT protection and virtualization
-- Minimal performance overhead
-- Kernel-mode and user-mode protection
-- Dynamic API call obfuscation
-- Compatible with modern Windows applications
+- **Advanced Anti-Hooking**
+  - Dynamic API call obfuscation
+  - IAT protection and virtualization
+  - Trampoline generation and management
+  - Deep scanning for hook detection
+
+- **Memory Security**
+  - Memory region protection
+  - Memory signature verification
+  - Self-integrity verification
+  - Code execution path validation
+
+- **System Security**
+  - Process integrity level detection
+  - Hardware ID generation
+  - Virtual machine detection
+  - Execution environment analysis
+
+- **Performance Optimization**
+  - Minimal overhead architecture
+  - LRU-based proxy cache
+  - Efficient memory management
+  - Optimized hash-based lookups
 
 ## Applications
 
@@ -28,6 +54,7 @@ v1.0.1 (2025-04-09)
 - DRM implementation
 - Malware research and analysis
 - Critical application security
+- License validation and hardware-binding
 
 ## Getting Started
 
@@ -50,75 +77,76 @@ v1.0.1 (2025-04-09)
 - `Src/Nexus.c` - Implementation of protection mechanisms
 - `Src/Example.c` - Usage examples and implementation patterns
 
+## API Reference
+
+### Core Functions
+
+- `SKGetModuleBase` - Safely resolves module base address
+- `SKGetProcedureAddrForCaller` - Retrieves virtualized API address
+- `SKVerifyProcessIntegrity` - Validates process integrity
+- `SKGetSystemIntegrityLevel` - Gets detailed integrity information
+
+### Memory Protection
+
+- `SKProtectMemoryRegion` - Applies protection to memory regions
+- `SKVerifyMemorySignature` - Validates memory region integrity
+- `SKSelfIntegrityCheck` - Verifies application code integrity
+
+### System Security
+
+- `SKGenerateHardwareID` - Creates unique hardware identifier
+- `SKDetectVirtualMachine` - Detects virtualized environments
+
+### Advanced Features
+
+- `SKProxyLRU` - Manages virtualization trampoline cache
+- `SKStackScan` - Analyzes execution call stack
+
 ## Usage Example
 
 ```c
 #include "Nexus.h"
-
 #include <stdio.h>
-#include <stdint.h>
-
-typedef NTSTATUS(NTAPI *FnNtQueryInformationProcess)(HANDLE, ULONG, PVOID, ULONG, PULONG);
-typedef NTSTATUS(NTAPI *FnLdrGetProcedureAddress)(void *, void *, ULONG, void **);
-typedef void(WINAPI *FnRtlExitUserThread)(NTSTATUS);
-
-const char *Funcs[] = {
-    "NtQueryInformationProcess",
-    "LdrGetProcedureAddress",
-    "RtlExitUserThread"};
 
 int main()
 {
-    printf("[*] loading ntdll...\n");
-
+    // Load module and resolve protected API
     void *ntdll = SKGetModuleBase(L"ntdll.dll");
-    if (!ntdll)
-    {
-        printf("[!] failed to resolve ntdll.dll\n");
-        return 1;
-    }
-
-    printf("[+] ntdll @ %p\n\n", ntdll);
-
-    for (int i = 0; i < sizeof(Funcs) / sizeof(Funcs[0]); i++)
-    {
-        const char *name = Funcs[i];
-
-        void *addr = SKGetProcedureAddrForCaller(
-            ntdll,
-            name,
-            SK_FLAG_ENABLE_SEH // SEH enabled, trampoline by default
-        );
-
-        if (addr)
-            printf("[+] %s: %p\n", name, addr);
-        else
-            printf("    [!] failed to resolve %s\n", name);
-    }
-
-    FnRtlExitUserThread fn = (FnRtlExitUserThread)(uintptr_t)SKGetProcedureAddrForCaller(
+    void *funcAddr = SKGetProcedureAddrForCaller(
         ntdll,
-        "RtlExitUserThread",
-        SK_FLAG_ENABLE_SEH);
-
-    if (fn)
-    {
-        printf("\n[~] calling RtlExitUserThread(0xDEAD)\n");
-        fn(0xDEAD);
+        "NtQueryInformationProcess",
+        SK_FLAG_ENABLE_SEH | SK_FLAG_DEEP_SCAN
+    );
+    
+    // Verify execution environment
+    DWORD integrityLevel = SKGetSystemIntegrityLevel();
+    BOOL isVM = SKDetectVirtualMachine();
+    DWORD hwid = SKGenerateHardwareID(SK_HWID_ALL);
+    
+    // Protect sensitive memory
+    void *sensitiveData = AllocateMemory();
+    SKProtectMemoryRegion(sensitiveData, dataSize, PAGE_READONLY);
+    
+    // Verify application integrity
+    if (!SKSelfIntegrityCheck()) {
+        // Handle integrity violation
     }
-    else
-    {
-        printf("[!] failed to resolve RtlExitUserThread\n");
-    }
-
+    
     return 0;
 }
 ```
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
 ## Security Considerations
 
 This tool is intended for legitimate software protection. Use responsibly and in compliance with applicable laws and regulations.
+
+### Best Practices
+
+- Combine multiple protection techniques for defense-in-depth
+- Implement secure error handling for protection failures
+- Regularly update security measures against new attack vectors
+- Consider using hardware-bound licensing for critical applications
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
