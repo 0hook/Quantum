@@ -5,7 +5,7 @@ A high-performance, professional-grade API call virtualization framework designe
 ## Changelog
 
 ```
-v1.1.0 (2025-05-15)
+v1.0.2 (2025-04-17)
 -------------------
 [+] Added hardware ID generation
 [+] Added memory protection and signature verification
